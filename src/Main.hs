@@ -2,6 +2,14 @@
 Module      : Main
 Description : PTCP server executable
 Copyright   : (c) Hector A. Escobedo IV 2016
+License     : GPL-3
+Maintainer  : ninjahector.escobedo@gmail.com
+Stability   : experimental
+Portability : portable
+
+This high-performance server broadcasts all data received to all hosts
+connected to it simultaneously. No metadata, no encryption, just the plain text
+chat protocol. I recommend using netcat as a client.
 |-}
 
 module Main where
@@ -15,11 +23,10 @@ import Data.Maybe
 import qualified Data.Map as Map
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
-import System.IO (IOMode(..))
+import System.IO (Handle, IOMode(..))
 
 defaultPortNumber = 7034
 maxMessageSize = 4096 -- In bytes
-debugMode = True
 
 main :: IO ()
 main = do
@@ -39,25 +46,28 @@ main = do
 
 runConnection :: Socket -> MVar BS.ByteString -> MVar (Map SockAddr Bool) -> IO ThreadId
 runConnection sock shared synced = do
-  conn <- accept sock
-  forkIO (talk conn shared synced) -- So we can handle multiple connections at once
+  (conn, addr) <- accept sock
+  hand <- socketToHandle conn ReadWriteMode
+  forkIO (talk hand addr shared synced) -- So we can handle multiple connections at once
 
-talk :: (Socket, SockAddr) -> MVar BS.ByteString -> MVar (Map SockAddr Bool) -> IO ()
-talk (sock, addr) shared synced = do
+talk :: Handle -> SockAddr -> MVar BS.ByteString -> MVar (Map SockAddr Bool) -> IO ()
+talk hand addr shared synced = do
   updateSynced True
-  hand <- socketToHandle sock ReadWriteMode
-  forever (sync hand)
+  forever sync
   where
-    sync hand = do
+    sync = do
+      incoming
+      outgoing
+    incoming = do
       lastMessage <- tryReadMVar shared
-      unless (isNothing lastMessage) $ void $ do
+      unless (isNothing lastMessage) $ do
         updateSynced False
         BS.hPut hand (fromJust lastMessage)
         updateSynced True
         waitForAll
         tryTakeMVar shared
         return ()
-
+    outgoing = do
       input <- BS.hGetNonBlocking hand maxMessageSize
       unless (BS.null input) $ do
         waitForAll
@@ -69,8 +79,6 @@ talk (sock, addr) shared synced = do
         waitForAll
         tryTakeMVar shared
         return ()
-
-      when debugMode (putStrLn ((show addr) ++ " synced"))
     updateSynced b = do
       syncmap <- takeMVar synced
       putMVar synced (Map.insert addr b syncmap)
