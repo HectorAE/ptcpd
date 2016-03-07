@@ -44,27 +44,35 @@ runConnection sock shared synced = do
 
 talk :: (Socket, SockAddr) -> MVar BS.ByteString -> MVar (Map SockAddr Bool) -> IO ()
 talk (sock, addr) shared synced = do
-  updateSynced False
+  updateSynced True
   hand <- socketToHandle sock ReadWriteMode
   forever (sync hand)
   where
     sync hand = do
-      updateSynced False
-      syncmap <- takeMVar synced -- Take control
-      input <- BS.hGetNonBlocking hand maxMessageSize
       lastMessage <- tryReadMVar shared
       unless (isNothing lastMessage) $ void $ do
+        updateSynced False
         BS.hPut hand (fromJust lastMessage)
-      share input
-      putMVar synced syncmap
-      updateSynced True
-      waitForAll
-      when debugMode (putStrLn "Done waiting")
-      tryTakeMVar shared -- Remove the last message if possible
+        updateSynced True
+        waitForAll
+        tryTakeMVar shared
+        return ()
+
+      input <- BS.hGetNonBlocking hand maxMessageSize
+      unless (BS.null input) $ do
+        waitForAll
+        syncmap <- takeMVar synced
+        tryTakeMVar shared
+        putMVar shared input
+        putMVar synced (Map.map (const False) syncmap) -- Alert all
+        updateSynced True
+        waitForAll
+        tryTakeMVar shared
+        return ()
+
+      when debugMode (putStrLn ((show addr) ++ " synced"))
     updateSynced b = do
       syncmap <- takeMVar synced
-      when debugMode
-        (putStrLn ((show addr) ++ " updating to " ++ (show b) ++ " on syncmap"))
       putMVar synced (Map.insert addr b syncmap)
     waitForAll = do -- Wait until all addresses are synced
       syncmap <- readMVar synced
