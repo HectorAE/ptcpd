@@ -15,9 +15,11 @@ import Data.Maybe
 import qualified Data.Map as Map
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
+import System.IO (IOMode(..))
 
 defaultPortNumber = 7034
 maxMessageSize = 4096 -- In bytes
+debugMode = True
 
 main :: IO ()
 main = do
@@ -43,17 +45,26 @@ runConnection sock shared synced = do
 talk :: (Socket, SockAddr) -> MVar BS.ByteString -> MVar (Map SockAddr Bool) -> IO ()
 talk (sock, addr) shared synced = do
   updateSynced False
-  forever sync
+  hand <- socketToHandle sock ReadWriteMode
+  forever (sync hand)
   where
-    sync = do
-      input <- recv sock maxMessageSize
+    sync hand = do
+      updateSynced False
+      syncmap <- takeMVar synced -- Take control
+      input <- BS.hGetNonBlocking hand maxMessageSize
       lastMessage <- tryReadMVar shared
-      unless (isNothing lastMessage) (void $ send sock (fromJust lastMessage))
+      unless (isNothing lastMessage) $ void $ do
+        BS.hPut hand (fromJust lastMessage)
       share input
+      putMVar synced syncmap
       updateSynced True
       waitForAll
+      when debugMode (putStrLn "Done waiting")
+      tryTakeMVar shared -- Remove the last message if possible
     updateSynced b = do
       syncmap <- takeMVar synced
+      when debugMode
+        (putStrLn ((show addr) ++ " updating to " ++ (show b) ++ " on syncmap"))
       putMVar synced (Map.insert addr b syncmap)
     waitForAll = do -- Wait until all addresses are synced
       syncmap <- readMVar synced
