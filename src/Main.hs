@@ -16,11 +16,14 @@ module Main where
 
 import Control.Concurrent
 import Control.Concurrent.MVar
+import Control.Exception
 import Control.Monad
+
 import qualified Data.ByteString as BS
 import Data.Map (Map)
-import Data.Maybe
 import qualified Data.Map as Map
+import Data.Maybe
+
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
 import System.IO (Handle, IOMode(..))
@@ -48,7 +51,9 @@ runConnection :: Socket -> MVar BS.ByteString -> MVar (Map SockAddr Bool) -> IO 
 runConnection sock shared synced = do
   (conn, addr) <- accept sock
   hand <- socketToHandle conn ReadWriteMode
-  forkIO (talk hand addr shared synced) -- So we can handle multiple connections at once
+  -- So we can handle multiple connections at once
+  tid <- forkIO (talk hand addr shared synced)
+  return tid
 
 talk :: Handle -> SockAddr -> MVar BS.ByteString -> MVar (Map SockAddr Bool) -> IO ()
 talk hand addr shared synced = do
@@ -62,7 +67,7 @@ talk hand addr shared synced = do
       lastMessage <- tryReadMVar shared
       unless (isNothing lastMessage) $ do
         updateSynced False
-        BS.hPut hand (fromJust lastMessage)
+        handle ignoreErr (BS.hPut hand (fromJust lastMessage))
         updateSynced True
         waitForAll
         tryTakeMVar shared
@@ -86,3 +91,8 @@ talk hand addr shared synced = do
       syncmap <- readMVar synced
       unless (and (Map.elems syncmap)) waitForAll
     share a = unless (BS.null a) (putMVar shared a)
+
+-- Very useful when we want to leave dangling sockets and threads, in case
+-- someone reconnects right away. May result in major memory leakage.
+ignoreErr :: IOError -> IO ()
+ignoreErr _ = return ()
