@@ -1,7 +1,7 @@
 {-|
 Module      : Main
 Description : PTCP server executable
-Copyright   : (c) Hector A. Escobedo IV 2016
+Copyright   : (c) 2016 Hector A. Escobedo IV
 License     : GPL-3
 Maintainer  : ninjahector.escobedo@gmail.com
 Stability   : experimental

@@ -1,0 +1,22 @@
+name:                ptcpd
+version:             0.1.0.0
+synopsis:            Plain Text Chat Protocol daemon
+description:         Group communication without overhead
+homepage:            https://gitgud.io/hae/ptcpd
+license:             GPL-3
+license-file:        LICENSE
+author:              Hector A. Escobedo
+maintainer:          ninjahector.escobedo@gmail.com
+copyright:           (c) 2016 Hector A. Escobedo IV
+category:            Network
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+executable ptcpd
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  -- other-modules:
+  -- other-extensions:
+  build-depends:       base >=4.8 && <4.9, bytestring >=0.10 && <0.11, containers >=0.5 && <0.6, network >=2.6 && <2.7
+  default-language:    Haskell2010
