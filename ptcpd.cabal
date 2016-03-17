@@ -1,5 +1,5 @@
 name:                ptcpd
-version:             0.1.0.0
+version:             0.1.0
 synopsis:            Plain Text Chat Protocol daemon
 description:         Group communication without overhead
 homepage:            https://gitgud.io/hae/ptcpd
