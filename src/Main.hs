@@ -1,7 +1,7 @@
 {-|
 Module      : Main
 Description : PTCP server executable
-Copyright   : (c) 2016 Hector A. Escobedo IV
+Copyright   : (c) 2016 Hector A. Escobedo
 License     : GPL-3
 Maintainer  : ninjahector.escobedo@gmail.com
 Stability   : experimental
@@ -14,19 +14,23 @@ connected to it simultaneously. No metadata, no encryption, just plain text.
 module Main where
 
 import Control.Concurrent
-import Control.Concurrent.STM
 import Control.Monad
+import Data.List.NonEmpty as NE
+import System.IO (Handle, IOMode(..), hClose)
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
+
 import Data.Set (Set)
 import qualified Data.Set as Set
 
 import Network.Socket
-import System.IO (Handle, IOMode(..), hClose)
 
-defaultPortNumber :: PortNumber
-defaultPortNumber = 7034
+import Control.Concurrent.STM
+
+
+ptcpStandardPort :: PortNumber
+ptcpStandardPort = 7034
 
 maxMessageSize :: Int
 maxMessageSize = 1048576 -- One mebibyte
@@ -35,9 +39,10 @@ main :: IO ()
 main = do
   channel <- atomically newBroadcastTChan
   connections <- atomically (newTVar Set.empty)
+  addr <- NE.head <$> getAddrInfo Nothing (Just "127.0.0.1") (Just (show ptcpStandardPort))
   sock <- socket AF_INET Stream defaultProtocol
   setSocketOption sock ReuseAddr 1
-  bindSocket sock (SockAddrInet defaultPortNumber iNADDR_ANY)
+  bind sock (addrAddress addr)
   listen sock maxListenQueue
   forever (runConnection sock channel connections)
 

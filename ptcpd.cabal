@@ -1,22 +1,42 @@
-name:                ptcpd
-version:             0.2.0
-synopsis:            Plain Text Chat Protocol daemon
-description:         Group communication without overhead
-homepage:            https://gitgud.io/hae/ptcpd
-license:             GPL-3
-license-file:        LICENSE
-author:              Hector A. Escobedo
-maintainer:          ninjahector.escobedo@gmail.com
-copyright:           (c) 2016 Hector A. Escobedo IV
-category:            Network
-build-type:          Simple
-extra-source-files:  README.md
-cabal-version:       >=1.10
+cabal-version:  3.14
+
+name:           ptcpd
+version:        0.3.0
+stability:      experimental
+synopsis:       Plain Text Chat Protocol daemon
+description:    Group communication without overhead
+homepage:       https://github.com/HectorAE/ptcpd
+license:        GPL-3.0-only
+license-file:   LICENSE
+author:         Hector A. Escobedo
+maintainer:     hae@dry.email
+copyright:      (c) 2016 Hector A. Escobedo
+category:       Network
+build-type:     Simple
+extra-files:
+    COPYING
+    README.md
+tested-with:
+    GHC ==
+      { 9.12.2
+      , 9.10.1
+      , 9.8.4
+      , 9.6.6
+      , 9.4.8
+      }
+
+source-repository head
+    type: git
+    location: https://github.com/HectorAE/ptcpd
 
 executable ptcpd
-  hs-source-dirs:      src
-  main-is:             Main.hs
-  -- other-modules:
-  -- other-extensions:
-  build-depends:       base >=4.8 && <4.10, bytestring >=0.10 && <0.11, containers >=0.5 && <0.6, network >=2.6 && <2.7, stm >=2.4 && <2.5
-  default-language:    Haskell2010
+    hs-source-dirs: src
+    main-is: Main.hs
+    build-depends:
+        base >= 4.9 && < 4.22
+      , bytestring >= 0.10 && < 0.13
+      , containers >= 0.5 && < 0.9
+      , network >= 3.1 && < 3.3
+      , stm >= 2.4 && < 2.6
+    default-language: Haskell2010
+    ghc-options: -Wall -Wcompat
