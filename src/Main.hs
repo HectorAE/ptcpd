@@ -1,31 +1,27 @@
-{-|
-Module      : Main
-Description : PTCP server executable
-Copyright   : (c) 2016 Hector A. Escobedo
-License     : GPL-3
-Maintainer  : ninjahector.escobedo@gmail.com
-Stability   : experimental
-Portability : portable
+-- SPDX-FileCopyrightText: 2016, 2025 Hector A. Escobedo <hae@dry.email>
+-- SPDX-License-Identifier: GPL-3.0-only
 
-This high-performance server broadcasts all data received to all hosts
-connected to it simultaneously. No metadata, no encryption, just plain text.
-|-}
 
 module Main where
 
+-- package: base
 import Control.Concurrent
 import Control.Monad
 import Data.List.NonEmpty as NE
 import System.IO (Handle, IOMode(..), hClose)
 
+-- package: bytestring
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 
+-- package: containers
 import Data.Set (Set)
 import qualified Data.Set as Set
 
+-- package: network
 import Network.Socket
 
+-- package: stm
 import Control.Concurrent.STM
 
 

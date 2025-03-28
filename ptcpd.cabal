@@ -1,20 +1,22 @@
 cabal-version:  3.14
 
+-- SPDX-FileCopyrightText: 2016, 2025 Hector A. Escobedo <hae@dry.email>
+-- SPDX-License-Identifier: GPL-3.0-only
+
 name:           ptcpd
-version:        0.3.0
+version:        0.3.1
 stability:      experimental
 synopsis:       Plain Text Chat Protocol daemon
 description:    Group communication without overhead
 homepage:       https://github.com/HectorAE/ptcpd
 license:        GPL-3.0-only
-license-file:   LICENSE
+license-files:  LICENSES/GPL-3.0-only.txt
 author:         Hector A. Escobedo
 maintainer:     hae@dry.email
-copyright:      (c) 2016 Hector A. Escobedo
+copyright:      2016, 2025 Hector A. Escobedo
 category:       Network
 build-type:     Simple
 extra-files:
-    COPYING
     README.md
 tested-with:
     GHC ==
