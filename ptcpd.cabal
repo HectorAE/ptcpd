@@ -1,10 +1,10 @@
-cabal-version:  3.14
+cabal-version:  3.8
 
 -- SPDX-FileCopyrightText: 2016, 2025 Hector A. Escobedo <hae@dry.email>
 -- SPDX-License-Identifier: GPL-3.0-only
 
 name:           ptcpd
-version:        0.3.1
+version:        0.3.2
 stability:      experimental
 synopsis:       Plain Text Chat Protocol daemon
 description:    Group communication without overhead
@@ -16,13 +16,15 @@ maintainer:     hae@dry.email
 copyright:      2016, 2025 Hector A. Escobedo
 category:       Network
 build-type:     Simple
-extra-files:
+-- TODO: switch to extra-files instead of extra-doc-files once ecosystem support for Cabal 3.14 has matured
+extra-doc-files:
     README.md
 tested-with:
     GHC ==
       { 9.12.2
       , 9.10.1
       , 9.8.4
+      , 9.6.7
       , 9.6.6
       , 9.4.8
       }
